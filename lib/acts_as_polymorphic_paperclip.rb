@@ -56,7 +56,7 @@ module LocusFocus
           # content_type: image/png
           # original_filename: 64x16.png
           # original_path: 64x16.png
-          attr_accessor :data, :asset_attributes
+          attr_accessor :data
 
           include LocusFocus::Acts::PolymorphicPaperclip::InstanceMethods
         end
