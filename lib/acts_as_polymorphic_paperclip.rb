@@ -4,10 +4,10 @@ module LocusFocus
       def self.included(base)
         base.extend ClassMethods
       end
-      
+
       module ClassMethods
         # Extends the model to afford the ability to associate other records with the receiving record.
-        # 
+        #
         # This module needs the paperclip plugin to work
         # http://www.thoughtbot.com/projects/paperclip
         def acts_as_polymorphic_paperclip(options = {})
@@ -25,25 +25,25 @@ module LocusFocus
               @owner.assets << asset
               @owner.assets(true)
             end
-            
+
             def detach(asset_id, delete_if_no_attachings = false)
               asset_id = extract_id(asset_id)
               attaching = @owner.attachings.find(:first, :conditions => ['asset_id = ?', asset_id])
               attachable = attaching.attachable
               raise ActiveRecord::RecordNotFound unless attaching
               result = attaching.destroy
-              
+
               asset = Asset.find(asset_id)
               if asset.attachings.empty? && delete_if_no_attachings# delete if no longer attached to anything
                 override_default_styles, normalised_styles = attachable.override_default_styles?(asset.name)
                 asset.data.instance_variable_set("@styles", normalised_styles) if override_default_styles
                 asset.data.send(:queue_existing_for_delete)
                 asset.data.send(:flush_deletes)
-                asset.save # needed to permanently remove file name and urls 
+                asset.save # needed to permanently remove file name and urls
               end
               result
             end
-            
+
             protected
             def extract_id(obj)
               return obj.id unless obj.class == Fixnum || obj.class == String
@@ -56,8 +56,8 @@ module LocusFocus
           # content_type: image/png
           # original_filename: 64x16.png
           # original_path: 64x16.png
-          attr_accessor :data
-            
+          attr_accessor :data, :asset_attributes
+
           include LocusFocus::Acts::PolymorphicPaperclip::InstanceMethods
         end
       end
@@ -74,15 +74,15 @@ module LocusFocus
             end
           end unless data.nil? || data.blank?
         end
-        
+
         def create_and_save_asset(data_item)
           the_asset = Asset.find_or_initialize_by_data_file_name(data_item.original_filename)
           override_default_styles, normalised_styles = override_default_styles?(data_item.original_filename)
           the_asset.data.instance_variable_set("@styles", normalised_styles) if override_default_styles
           the_asset.data = data_item
           if the_asset.save
-  
-            # This association may be saved more than once within the same request / response 
+
+            # This association may be saved more than once within the same request / response
             # cycle, which leads to needless DB calls. Now we'll clear out the data attribute
             # once the record is successfully saved any subsequent calls will be ignored.
             data_item = nil

@@ -1,3 +1,5 @@
+This is a stripped version of the PaperclipPolymorph plugin. The generators and models have been removed.
+
 h1. PaperclipPolymorph
 
 This plugin allows users of the Paperclip plugin to easily share attached files between 
